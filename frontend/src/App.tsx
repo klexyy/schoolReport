@@ -14,6 +14,7 @@ function App() {
           <Layout.Content
             style={{ padding: '10px 160px' }}
           >
+            
             <Header />
             <Routes>
               <Route path='/' element={<Main />} />
