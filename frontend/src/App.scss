@@ -1,0 +1,37 @@
+@import "~antd/dist/antd.css";
+
+// $primary: #284167;
+$primary: #FE5B54;
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+ 
+  .ant-pagination-item{
+    line-height: 15px;
+  }
+  .ant-row {
+    row-gap: 15px !important;
+  }
+}
+
+
+.text--secondary {
+  font-size: 14px;
+  color: grey;
+}
+
+.list-item {
+  display: flex;
+  justify-content:flex-start;
+
+  
+}
+
+.list .ant-col {
+  height: 100%;
+}
+.list .ant-list-item {
+  padding: 5px 0;
+}
