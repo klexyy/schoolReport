@@ -37,10 +37,18 @@ get '/channels' => sub ($c) {
 
     $c->render( json => @results );
 };
+get '/genre' => sub ($c) {
+    my $sql = $db->prepare("SELECT * from \"Genre\"")
+      or die "prepare statement failed: $db->errstr()";
+
+    my @results = $db->selectall_arrayref( $sql, { Slice => {} } );
+
+    $c->render( json => @results );
+};
 get '/info' => sub ($c) {
     my $date = $c->req->url->query->param('date');
     my $sql = $db->prepare(
-        "select c.id channel_id, p.id program_id, c.name channelName, p.name, p.date, p.time from \"Channel\" c
+        "select c.id channel_id, p.id program_id, c.name channelName, p.name, p.date, p.time, p.genre_id from \"Channel\" c
 join \"Programs_Channel\" pc on c.id = pc.channel_id
 join \"Programs\" p on p.id = pc.program_id and p.date = \'$date\'
 order by  p.date::date asc, to_timestamp(p.time,'HH24:MI') asc"
@@ -74,8 +82,9 @@ post 'program' => sub ($c) {
     my $id     = $json->{'id'};
     my $time     = $json->{'time'};
     my $name     = $json->{'name'};
+    my $genre_id     = $json->{'genre_id'};
     my $sql       = $db->prepare(
-        "update \"Programs\" set time = \'$time\', name=\'$name\' where id = $id;"
+        "update \"Programs\" set time = \'$time\', name=\'$name\', genre_id=$genre_id where id = $id;"
     ) or die "prepare statement failed: $db->errstr()";
     $sql->execute();
 
@@ -85,10 +94,11 @@ post 'program_add' => sub ($c) {
     my $json    = $c->req->json;
     my $time     = $json->{'time'};
     my $name     = $json->{'name'};
+    my $genre_id     = $json->{'genre_id'};
     my $date     = $json->{'date'};
     my $channel_id     = $json->{'channel_id'};
     my $sql       = $db->prepare(
-        "insert into \"Programs\" values(\'$name\',\'$date\',\'$time\',default) returning id;"
+        "insert into \"Programs\" values(\'$name\',\'$date\',\'$time\',default,\'$genre_id\') returning id;"
     ) or die "prepare statement failed: $db->errstr()";
     $sql->execute();
     my $result    = $sql->fetchrow_hashref();
