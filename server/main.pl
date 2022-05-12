@@ -43,7 +43,7 @@ get '/info' => sub ($c) {
         "select c.id channel_id, p.id program_id, c.name channelName, p.name, p.date, p.time from \"Channel\" c
 join \"Programs_Channel\" pc on c.id = pc.channel_id
 join \"Programs\" p on p.id = pc.program_id and p.date = \'$date\'
-order by  p.date::date asc, to_timestamp(p.time,'HH24:MI') asc"
+order by  to_date(p.date, \'DD.MM.YYYY\') asc, to_timestamp(p.time,'HH24:MI') asc"
     ) or die "prepare statement failed: $db->errstr()";
 
     my @results = $db->selectall_arrayref( $sql, { Slice => {} } );
