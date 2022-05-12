@@ -1,24 +1,29 @@
-<<<<<<< HEAD
 import {
   Button,
   Card,
   Col,
+  DatePicker,
   Divider,
+  Input,
+  InputNumber,
   List,
+  Modal,
   Pagination,
   Row,
+  Select,
+  TimePicker,
   Typography,
-} from "antd";
-import moment from "moment";
+} from 'antd';
+import moment from 'moment';
 import React, {
   Dispatch,
   SetStateAction,
   useCallback,
   useEffect,
   useState,
-} from "react";
-import CreateLessonModal from "../components/CreateLessonModal";
-import { DATE_FORMAT } from "../consts";
+} from 'react';
+import CreateLessonModal from '../components/CreateLessonModal';
+import { DATE_FORMAT, DISPLAY_DATE_FORMAT } from '../consts';
 import {
   ClassroomDTO,
   CreateLessonDTO,
@@ -27,410 +32,453 @@ import {
   ScheduleAssignationDTO,
   ScheduleDTO,
   SubjectDTO,
-} from "../dto";
-import { FieldNames } from "rc-select/lib/Select";
-=======
-import {Button, Col, Divider, List, Row, Typography} from 'antd';
-import moment from 'moment';
-import React, {Dispatch, SetStateAction, useEffect, useState} from 'react';
-import CreateLessonModal from '../components/CreateLessonModal';
-import {DATE_FORMAT, DISPLAY_DATE_FORMAT} from '../consts';
-import {ClassroomDTO, CreateLessonDTO, GroupDTO, ScheduleAssignationDTO, ScheduleDTO, SubjectDTO,} from '../dto';
->>>>>>> c8443fb5bbc8f8b1e35d810896293652ef47d89b
+} from '../dto';
+import { FieldNames } from 'rc-select/lib/Select';
+
 import {
-  changeLesson,
-  createLesson,
-  deleteLesson,
-  getClassrooms,
-  getGroups,
-  getSchedules,
-  getSchedulesAssignations,
-  getSubject,
-<<<<<<< HEAD
-} from "../api";
-import { LeftOutlined, RightOutlined } from "@ant-design/icons";
-=======
+  DeleteFilled,
+  DeleteOutlined,
+  EditOutlined,
+  LeftOutlined,
+  PlusCircleOutlined,
+  PlusOutlined,
+  RightOutlined,
+  SettingOutlined,
+} from '@ant-design/icons';
+import {
+  addProgram,
+  changeProgram,
+  deleteProgram,
+  getChannels,
+  getData,
 } from '../api';
-import { LeftOutlined, RightOutlined } from '@ant-design/icons';
->>>>>>> c8443fb5bbc8f8b1e35d810896293652ef47d89b
 
-
-<<<<<<< HEAD
-const Main = (props: Props) => {
-  const data = [
-    {
-      channel: "1",
-      zabyl: [
-        {
-          name: "123",
-          time: "12:30",
-        },
-        {
-          name: "Пусть говорят",
-          time: "21:00",
-        },
-      ],
-    },
-    {
-      channel: "1",
-      zabyl: [
-        {
-          name: "123",
-          time: "12:30",
-        },
-        {
-          name: "Пусть говорят",
-          time: "21:00",
-        },
-      ],
-    },
-    {
-      channel: "1",
-      zabyl: [
-        {
-          name: "123",
-          time: "12:30",
-        },
-        {
-          name: "Пусть говорят",
-          time: "21:00",
-        },
-      ],
-    },
-    {
-      channel: "1",
-      zabyl: [
-        {
-          name: "123",
-          time: "12:30",
-        },
-        {
-          name: "Пусть говорят",
-          time: "21:00",
-        },
-      ],
-    },
-    {
-      channel: "1",
-      zabyl: [
-        {
-          name: "123",
-          time: "12:30",
-        },
-        {
-          name: "Пусть говорят",
-          time: "16:00",
-        },
-        {
-          name: "Пусть говорят",
-          time: "21:00",
-        },
-        {
-          name: "Пусть говорят",
-          time: "21:00",
-        },
-      ],
-    },
-  ];
-=======
-const generateDateItem = (
-  dateNow: string,
-  handleModalOpen: (
-    id?: number,
-    data?: {
-      class?: ClassroomDTO;
-      subject?: SubjectDTO;
-      time?: string;
-      group?: (GroupDTO | undefined)[];
-      date?: string;
-    }
-  ) => void,
-  i: number,
-  schedule: ScheduleDTO[],
-  classrooms: ClassroomDTO[],
-  subjects: SubjectDTO[],
-  groups: GroupDTO[],
-  scheduleAssignations: ScheduleAssignationDTO[]
-) => {
-  const date = moment(dateNow, DATE_FORMAT).add(i, 'days').format(DATE_FORMAT);
-  const lessons: {
-    id: number;
-    class?: ClassroomDTO;
-    subject?: SubjectDTO;
-    time?: string;
-    group?: (GroupDTO | undefined)[];
-  }[] = schedule
-    .filter((el) => moment(el.date).format(DATE_FORMAT) === date)
-    .map((el) => ({
-      id: el.id,
-      class: classrooms.find((classroom) => classroom.id === el.classroom_id),
-      subject: subjects.find((subject) => subject.id === el.subject_id),
-      time: el.start_time + '-' + el.end_time,
-      group: scheduleAssignations.map((_el) =>
-        _el.schedule_id === el.id
-          ? groups.find((gr) => _el.group_id === gr.id)
-          : undefined
-      ),
-    }));
-
-  return (
-    <Col span={3}>
-      <List
-        className={
-          date === moment(Date.now()).format(DATE_FORMAT) ? 'today' : ''
-        }
-        size='small'
-        header={
-          <div>
-            {moment(date).format(DISPLAY_DATE_FORMAT)} <Divider style={{ margin: '10px 0 0 0' }} />
-          </div>
-        }
-        bordered
-        dataSource={lessons}
-        locale={{ emptyText: 'Нет занятий!' }}
-        renderItem={(item) => (
-          <List.Item
-            onClick={() => handleModalOpen(item.id, { ...item, date })}
-            className='listItem'
-          >
-            <Row key={i}>
-              <Col flex='1 0 100%'>
-                {item.group?.map((el) => el?.name).join(' ')} {item.class?.name}
-              </Col>
-              <Col flex='1 0 100%'>{item.subject?.name}</Col>
-              <Col>
-                <Typography.Text type='secondary'>{item.time}</Typography.Text>
-              </Col>
-            </Row>
-          </List.Item>
-        )}
-      />
-    </Col>
-  );
+type Props = {
+  isLogin: string;
 };
-const generateStartDateItems = (
-  offset: number,
-  setDateItems: Dispatch<SetStateAction<JSX.Element[]>>,
-  handleModalOpen: (
-    id?: number,
-    data?: {
-      class?: ClassroomDTO;
-      subject?: SubjectDTO;
-      time?: string;
-      group?: (GroupDTO | undefined)[];
-      date?: string;
-    }
-  ) => void,
-  schedule: ScheduleDTO[],
-  subjects: SubjectDTO[],
-  classrooms: ClassroomDTO[],
-  groups: GroupDTO[],
-  scheduleAss: ScheduleAssignationDTO[]
-) => {
-  const startDate = moment(Date.now())
-    .startOf('isoWeek')
-    .add(offset, 'w')
-    .format(DATE_FORMAT);
-  let items: JSX.Element[] = [];
-
-  for (let i = 0; i < 7; i++) {
-    items.push(
-      generateDateItem(
-        startDate,
-        handleModalOpen,
-        i,
-        schedule,
-        classrooms,
-        subjects,
-        groups,
-        scheduleAss
-      )
-    );
-  }
-  setDateItems(items);
-};
-
-const Main = () => {
-  const [dateItems, setDateItems] = useState<JSX.Element[]>([]);
-  const [openModal, setOpenModal] = useState(false);
-  const [modalData, setModalData] = useState<Partial<CreateLessonDTO>>({});
-  const [id, setId] = useState<number | null>(null);
-  const [offset, setOffset] = useState<number>(0);
->>>>>>> c8443fb5bbc8f8b1e35d810896293652ef47d89b
+const Main = ({ isLogin }: Props) => {
+  // const data = [
+  //   {
+  //     channel: '1',
+  //     zabyl: [
+  //       {
+  //         id: 0,
+  //         name: '123',
+  //         time: '12:30',
+  //       },
+  //       {
+  //         id: 0,
+  //         name: 'Пусть говорят',
+  //         time: '21:00',
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     channel: '1',
+  //     zabyl: [
+  //       {
+  //         id: 0,
+  //         name: '123',
+  //         time: '12:30',
+  //       },
+  //       {
+  //         id: 0,
+  //         name: 'Пусть говорят',
+  //         time: '21:00',
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     channel: '1',
+  //     zabyl: [
+  //       {
+  //         id: 0,
+  //         name: '123',
+  //         time: '12:30',
+  //       },
+  //       {
+  //         id: 0,
+  //         name: 'Пусть говорят',
+  //         time: '21:00',
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     channel: '1',
+  //     zabyl: [
+  //       {
+  //         id: 0,
+  //         name: '123',
+  //         time: '12:30',
+  //       },
+  //       {
+  //         id: 0,
+  //         name: 'Пусть говорят',
+  //         time: '21:00',
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     channel: '1',
+  //     zabyl: [
+  //       {
+  //         id: 0,
+  //         name: '123',
+  //         time: '12:30',
+  //       },
+  //       {
+  //         id: 0,
+  //         name: 'Пусть говорят',
+  //         time: '16:00',
+  //       },
+  //       {
+  //         id: 0,
+  //         name: 'Пусть говорят',
+  //         time: '21:00',
+  //       },
+  //       {
+  //         id: 0,
+  //         name: 'Пусть говорят',
+  //         time: '21:00',
+  //       },
+  //     ],
+  //   },
+  // ];
+  const [data, setData] = useState<
+    {
+      channel_id: number;
+      program_id: number;
+      channelName: string;
+      name: string;
+      date: string;
+      time: string;
+    }[]
+  >([]);
 
   const renderWeek = (from: string) => {
     const resDates: DatePaginationDTO[] = [];
 
     for (let i = 0; i < 7; i++) {
-      const mom = moment(from, DATE_FORMAT).add(i + 1, "day");
+      const mom = moment(from, DISPLAY_DATE_FORMAT).add(i + 1, 'day');
       resDates.push({
-        dayName: mom.format("ddd"),
-        date: mom.format(DATE_FORMAT),
+        dayName: mom.format('ddd'),
+        date: mom.format(DISPLAY_DATE_FORMAT),
       });
     }
     return resDates;
   };
+  const [selectedDate, setSelectedDate] = useState<string>(
+    moment().format(DISPLAY_DATE_FORMAT)
+  );
   const [dates, setDates] = useState<DatePaginationDTO[]>(
-    renderWeek(moment().subtract(1, "day").format(DATE_FORMAT))
+    renderWeek(moment().subtract(1, 'day').format(DISPLAY_DATE_FORMAT))
   );
 
-<<<<<<< HEAD
-  const isNow = (time: string, nextTime: string = "00:00") => {
+  const isNow = (time: string, nextTime: string = '00:00') => {
     const now = moment();
-=======
-    generateStartDateItems(
-      offset,
-      setDateItems,
-      handleModalOpen,
-      schedules,
-      subject,
-      classrooms,
-      groups,
-      schedulesAssignations
-    );
-  }, [offset, classrooms, groups, schedules, schedulesAssignations, subject]);
->>>>>>> c8443fb5bbc8f8b1e35d810896293652ef47d89b
 
-    return now.isBetween(moment(time, "HH:mm"), moment(nextTime, "HH:mm"));
+    return now.isBetween(moment(time, 'HH:mm'), moment(nextTime, 'HH:mm'));
   };
 
-<<<<<<< HEAD
   const itemRender = useCallback(
     (
       page: number,
-      type: "page" | "prev" | "next" | "jump-prev" | "jump-next",
+      type: 'page' | 'prev' | 'next' | 'jump-prev' | 'jump-next',
       element: React.ReactNode
     ) => {
-      if (type === "prev") {
-        return (
-          <a>
-            <LeftOutlined />
-          </a>
-        );
+      if (type === 'prev') {
+        return <LeftOutlined />;
       }
-      if (type === "next") {
-        return (
-          <a>
-            <RightOutlined />
-          </a>
-        );
+      if (type === 'next') {
+        return <RightOutlined />;
       }
-      if (type === "page") {
+      if (type === 'page') {
         return (
-          <a>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <div style={{lineHeight: '18px'}}>{dates[page-1].dayName}</div>
-              <div style={{lineHeight: '10px', fontSize:'11px'}}>{dates[page-1].date.slice(0,5)}</div>
+          <div
+            style={{ display: 'flex', flexDirection: 'column' }}
+            onClick={() => setSelectedDate(dates[page - 1].date)}
+          >
+            <div style={{ lineHeight: '18px' }}>{dates[page - 1].dayName}</div>
+            <div style={{ lineHeight: '10px', fontSize: '11px' }}>
+              {dates[page - 1].date.slice(0, 5)}
             </div>
-          </a>
+          </div>
         );
       }
-=======
-  const handleModalOpen = (
-    id?: number,
-    data?: {
-      class?: ClassroomDTO;
-      subject?: SubjectDTO;
-      time?: string;
-      group?: (GroupDTO | undefined)[];
-      date?: string;
-    }
-  ) => {
-    if (id) {
-      setId(id);
-      console.log(data);
-
-      setModalData({
-        start_time: data?.time?.split('-')[0],
-        end_time: data?.time?.split('-')[1],
-        subject_id: data?.subject?.id,
-        classroom_id: data?.class?.id,
-        group_id: data?.group?.map((el) => el?.name).join(' '),
-        date: data?.date,
-      });
-    } else {
-      setId(null);
-      setModalData({});
-    }
->>>>>>> c8443fb5bbc8f8b1e35d810896293652ef47d89b
 
       return element;
     },
     [dates]
   );
-
+  const [temp, setTemp] = useState('');
+  const [channels, setChannels] = useState<{ id: number; name: string }[]>([]);
+  const [modal, setModal] = useState(false);
+  const [modalAdd, setModalAdd] = useState(false);
+  const [addData, setAddData] = useState<{
+    channel_id: number;
+    time?: string;
+    name: string;
+    date?: string;
+  }>({ channel_id: 0, name: '', date: moment().format('DD.MM.YYYY') });
+  const [addToId, setAddToId] = useState(0);
+  const [modalDel, setModalDel] = useState(false);
+  const [selectedToChange, setSelectedToChange] = useState(0);
+  const [selectedToDel, setSelectedToDel] = useState(0);
+  const [modalData, setModalData] = useState<{
+    name: string;
+    time: string;
+  }>({ name: '', time: '' });
+  const handleChange = (id: number) => {
+    setModal(true);
+    setSelectedToChange(id);
+    setModalData(
+      data.find((el) => el.program_id === id) || { name: '', time: '' }
+    );
+  };
+  const openAddTo = (id: number) => {
+    setModalAdd(true);
+    setAddData({ ...addData, channel_id: id });
+  };
+  const handleDelete = (id: number) => {
+    setModalDel(true);
+    setSelectedToDel(id);
+  };
+  useEffect(() => {
+    getChannels().then(({ data }) => setChannels(data));
+    getData(selectedDate).then((result) => {
+      setData(result.data);
+    });
+  }, [selectedDate]);
   return (
-<<<<<<< HEAD
-    <div className="root">
-      <Pagination total={50} itemRender={itemRender} showSizeChanger={false} style={{margin: 'auto'}}/>
-      <List
-        grid={{ gutter: 16, column: 5 }}
-        dataSource={[...data,...data]}
-        className="list"
-        renderItem={(item) => (
-          <List.Item style={{ height: "100%" }}>
-            <Card
-              title={item.channel}
-              bordered={false}
-              style={{ height: "100%"}}
-              bodyStyle={{ padding: "0 15px", height: "100%" }}
-            >
-              <List style={{ height: "100%" }}>
-                {item.zabyl.map((el, idx) => (
-                  <List.Item
-                    className={`list-item ${
-                      isNow(
-                        el.time,
-                        item.zabyl[idx + 1]?.time || item.zabyl[0].time
-                      )
-                        ? "text--secondary"
-                        : ""
-                    }`}
-                  >
-                    <div>{el.time}</div>&nbsp;
-                    <div>{el.name}</div>
-                  </List.Item>
-                ))}
-              </List>
-            </Card>
-          </List.Item>
-        )}
-=======
-    <div>
-      <Row justify='end' style={{ marginBottom: '10px' }}>
-        <Col pull={1}>
-          <Button onClick={() => handleModalOpen()}>Добавить занятие</Button>
-        </Col>
-      </Row>
-      <Row justify='space-around' align='middle'>
-        <Col span={1}>
-          <Button onClick={_=> setOffset(offset - 1)} icon shape='circle' size='large'>
-            <LeftOutlined />
-          </Button>
-        </Col>
-        <Col span={22}>
-          <Row justify='space-around'>{dateItems}</Row>
-        </Col>
-        <Col span={1} style={{ display: 'flex', justifyContent: 'end' }}>
-          <Button onClick={_=> setOffset(offset + 1)} icon shape='circle' size='large'>
-            <RightOutlined />
-          </Button>
-        </Col>
-      </Row>
+    <div className='root'>
+      {!channels.length && !data.length ? (
+        <></>
+      ) : (
+        <>
+          <Pagination
+            total={50}
+            itemRender={itemRender}
+            showSizeChanger={false}
+            style={{ margin: 'auto' }}
+          />
+          <List
+            grid={{ gutter: 16, column: 5 }}
+            dataSource={channels}
+            className='list'
+            renderItem={(item) => (
+              <List.Item style={{ height: '100%' }}>
+                <Card
+                  title={
+                    <Row justify='space-between'>
+                      <Typography.Paragraph>{item.name}</Typography.Paragraph>
+                      {isLogin && (
+                        <PlusOutlined
+                          style={{ cursor: 'pointer' }}
+                          onClick={() => openAddTo(item.id)}
+                        />
+                      )}
+                    </Row>
+                  }
+                  bordered={false}
+                  style={{ height: '100%' }}
+                  bodyStyle={{ padding: '0 15px', height: '100%' }}
+                >
+                  <List style={{ height: '100%' }}>
+                    {data
+                      .filter((el) => el.channel_id === item.id)
+                      .map((el, idx) => (
+                        <List.Item
+                          className={`list-item ${
+                            ''
+                            // isNow(
+                            //   el.time,
+                            //   item.zabyl[idx + 1]?.time || item.zabyl[0].time
+                            // )
+                            //   ? 'text--secondary'
+                            //   : ''
+                          }`}
+                        >
+                          <div className='row'>
+                            <div>{el.time}</div>&nbsp;
+                            <div>{el.name}</div>
+                          </div>
+                          <div className='icons'>
+                            {isLogin ? (
+                              <>
+                                <SettingOutlined
+                                  className='settingIcon'
+                                  onClick={() => handleChange(el.program_id)}
+                                />
+                                <DeleteOutlined
+                                  className='deleteIcon'
+                                  onClick={() => handleDelete(el.program_id)}
+                                />
+                              </>
+                            ) : (
+                              <></>
+                            )}
+                          </div>
+                        </List.Item>
+                      ))}
+                    {!data.filter((el) => el.channel_id === item.id).length && (
+                      <List.Item className={`list-item`}>Нет передач</List.Item>
+                    )}
+                  </List>
+                </Card>
+              </List.Item>
+            )}
+          />
 
-      <CreateLessonModal
-        data={modalData}
-        id={id}
-        visible={openModal}
-        closeModal={closeModal}
-        createLesson={createSubject}
-        deleteLesson={deleteSubject}
-        changeLesson={changeSubject}
-        groups={groupsOptions}
-        lessons={subjectOptions}
-        classrooms={classroomOptions}
->>>>>>> c8443fb5bbc8f8b1e35d810896293652ef47d89b
-      />
+          <Modal
+            title='Изменить передачу'
+            visible={modal}
+            onCancel={() => setModal(false)}
+            onOk={() => {
+              changeProgram({ ...modalData, id: selectedToChange }).then(
+                (res) => {
+                  setModal(false);
+                  getData(selectedDate).then((result) => {
+                    setData(result.data);
+                  });
+                }
+              );
+            }}
+          >
+            <Row gutter={25}>
+              <Col>Время</Col>
+              <Col>
+                <Input
+                  value={modalData.time}
+                  onChange={({ target }) =>
+                    setModalData({ ...modalData, time: target.value })
+                  }
+                ></Input>
+              </Col>
+            </Row>
+            <Row gutter={5} style={{ marginTop: '20px' }}>
+              <Col>Название</Col>
+              <Col>
+                <Input
+                  value={modalData.name}
+                  onChange={({ target }) =>
+                    setModalData({ ...modalData, name: target.value })
+                  }
+                ></Input>
+              </Col>
+            </Row>
+          </Modal>
+
+          <Modal
+            title='Добавить передачу'
+            visible={modalAdd}
+            onCancel={() => {
+              setModalAdd(false);
+              setAddData({
+                channel_id: 0,
+                name: '',
+                date: moment().format('HH:MM'),
+              });
+            }}
+            onOk={() => {
+              //@ts-ignore
+              addProgram(addData).then((res) => {
+                setModalAdd(false);
+                setAddData({
+                  channel_id: 0,
+                  name: '',
+                  date: moment().format('DD.MM.YYYY'),
+                });
+                getData(selectedDate).then((result) => {
+                  setData(result.data);
+                });
+              });
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '15px',
+                width: '100%',
+              }}
+            >
+              <Row>
+                <Col span={5}>Канал</Col>
+                <Col span={7}>
+                  <Select
+                    value={addData.channel_id}
+                    onChange={(channel_id) =>
+                      setAddData({ ...addData, channel_id })
+                    }
+                    options={channels.map((el) => ({
+                      label: el.name,
+                      value: el.id,
+                    }))}
+                    style={{ width: '200px' }}
+                  ></Select>
+                </Col>
+              </Row>
+              <Row>
+                <Col span={5}>Название</Col>
+                <Col>
+                  <Input
+                    value={addData.name}
+                    onChange={({ target }) =>
+                      setAddData({ ...addData, name: target.value })
+                    }
+                  ></Input>
+                </Col>
+              </Row>
+              <Row>
+                <Col span={5}>Дата</Col>
+                <Col>
+                  <DatePicker
+                    value={
+                      addData.date
+                        ? moment(addData.date, 'DD.MM.YYYY')
+                        : moment()
+                    }
+                    format={'DD.MM.YYYY'}
+                    placeholder='Выберите дату'
+                    onChange={(_, date) => setAddData({ ...addData, date })}
+                  ></DatePicker>
+                </Col>
+              </Row>
+              <Row>
+                <Col span={5}>Время начала</Col>
+                <Col>
+                  <TimePicker
+                    value={
+                      addData.time ? moment(addData.time, 'HH:mm') : undefined
+                    }
+                    format={'HH:mm'}
+                    onChange={(time) =>
+                      setAddData({
+                        ...addData,
+                        time: moment(time).format('HH:mm'),
+                      })
+                    }
+                  />
+                </Col>
+              </Row>
+            </div>
+          </Modal>
+
+          <Modal
+            title='Удалить передачу?'
+            visible={modalDel}
+            onCancel={() => setModalDel(false)}
+            onOk={() => {
+              deleteProgram(selectedToDel).then((res) => {
+                setModalDel(false);
+                getData(selectedDate).then((result) => {
+                  setData(result.data);
+                });
+              });
+            }}
+          ></Modal>
+        </>
+      )}
     </div>
   );
 };

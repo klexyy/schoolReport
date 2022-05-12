@@ -6,6 +6,7 @@ use DB;
 use Mojolicious::Static;
 use Mojo::Log;
 use Data::Dumper;
+use Scalar::MoreUtils qw(empty);
 use Mojo::JSON qw(decode_json encode_json);
 my $app = app;
 my $db  = db_connect();
@@ -28,7 +29,7 @@ get '/' => sub ($c) {
     $c->render( text => "hello" );
 };
 ####
-get '/channel' => sub ($c) {
+get '/channels' => sub ($c) {
     my $sql = $db->prepare("SELECT * from \"Channel\"")
       or die "prepare statement failed: $db->errstr()";
 
@@ -36,6 +37,94 @@ get '/channel' => sub ($c) {
 
     $c->render( json => @results );
 };
+get '/info' => sub ($c) {
+    my $date = $c->req->url->query->param('date');
+    my $sql = $db->prepare(
+        "select c.id channel_id, p.id program_id, c.name channelName, p.name, p.date, p.time from \"Channel\" c
+join \"Programs_Channel\" pc on c.id = pc.channel_id
+join \"Programs\" p on p.id = pc.program_id and p.date = \'$date\'
+order by  p.date::date asc, to_timestamp(p.time,'HH24:MI') asc"
+    ) or die "prepare statement failed: $db->errstr()";
+
+    my @results = $db->selectall_arrayref( $sql, { Slice => {} } );
+
+    $c->render( json => @results );
+};
+
+post 'login' => sub ($c) {
+    my $json    = $c->req->json;
+    my $login     = $json->{'login'};
+    my $pass     = $json->{'pass'};
+    my $sql       = $db->prepare(
+        "select * from \"Admin\" where login = \'$login\' and password = \'$pass\';"
+    ) or die "prepare statement failed: $db->errstr()";
+    $sql->execute();
+    my $res = $sql->fetchrow_hashref;
+    return $c->render(  text => 'bad', status => '400') if empty($res);
+    $c->render( json => $res);
+
+};
+
+options 'login' => sub ($c) {
+    $c->render( text=> 'good', status => '200');
+};
+
+post 'program' => sub ($c) {
+    my $json    = $c->req->json;
+    my $id     = $json->{'id'};
+    my $time     = $json->{'time'};
+    my $name     = $json->{'name'};
+    my $sql       = $db->prepare(
+        "update \"Programs\" set time = \'$time\', name=\'$name\' where id = $id;"
+    ) or die "prepare statement failed: $db->errstr()";
+    $sql->execute();
+
+    $c->render( text=> 'good');
+};
+post 'program_add' => sub ($c) {
+    my $json    = $c->req->json;
+    my $time     = $json->{'time'};
+    my $name     = $json->{'name'};
+    my $date     = $json->{'date'};
+    my $channel_id     = $json->{'channel_id'};
+    my $sql       = $db->prepare(
+        "insert into \"Programs\" values(\'$name\',\'$date\',\'$time\',default) returning id;"
+    ) or die "prepare statement failed: $db->errstr()";
+    $sql->execute();
+    my $result    = $sql->fetchrow_hashref();
+    my $id2       = $result->{'id'};
+
+    my $sql2       = $db->prepare(
+        "insert into \"Programs_Channel\" values($id2, $channel_id)"
+    ) or die "prepare statement failed: $db->errstr()";
+    $sql2->execute();
+    $c->render( text=> 'good');
+};
+
+options 'program' => sub ($c) {
+    $c->render( text=> 'good', status => '200');
+};
+options 'program_add' => sub ($c) {
+    $c->render( text=> 'good', status => '200');
+};
+
+del 'program/:id' => sub ($c) {
+    my $id     = $c->param('id');
+
+    my $sql       = $db->prepare(
+        "delete from \"Programs_Channel\" where program_id = $id;
+        delete from \"Programs\" where id = $id;"
+    ) or die "prepare statement failed: $db->errstr()";
+    $sql->execute();
+
+    $c->render( text=> 'good');
+
+};
+
+options 'program/:id' => sub ($c) {
+    $c->render( text=> 'good', status => '200');
+};
+
 post '/groups' => sub ($c) {
     my $name = $c->param('name');
     my $sql  = $db->prepare("insert into groups values(default, \'$name\')")
@@ -142,14 +231,17 @@ post '/schedule/:id' => sub ($c) {
     ) or die "prepare statement failed: $db->errstr()";
 
     $sql->execute();
-    my $sqlString = "delete from schedule_assignation where schedule_id = " . $idparam. "; insert into schedule_assignation values";
+    my $sqlString =
+        "delete from schedule_assignation where schedule_id = "
+      . $idparam
+      . "; insert into schedule_assignation values";
 
     foreach my $group ( split /\s+/, $group_id ) {
         say "$group\n";
         $sqlString = $sqlString . " (default, $group, $idparam),";
     }
     chop($sqlString);
-    my $sql2 = $db->prepare( $sqlString )
+    my $sql2 = $db->prepare($sqlString)
       or die "prepare statement failed: $db->errstr()";
     $sql2->execute();
 

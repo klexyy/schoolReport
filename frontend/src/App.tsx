@@ -1,12 +1,18 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.scss';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Main from './pages/Main';
 import { Layout } from 'antd';
 import Header from './components/Header';
-import Contacts from './pages/Contacts';
+import Login from './pages/Login';
+import { useLocalStorage } from 'usehooks-ts';
 
 function App() {
+  const [user,setUser] = useState<string>(localStorage.getItem('user') as string)
+  const logout = () => {
+    setUser('')
+    localStorage.removeItem('user')
+  }
   return (
     <BrowserRouter>
       <Layout>
@@ -15,9 +21,10 @@ function App() {
             style={{ padding: '10px 160px' }}
           >
             
-            <Header />
+            <Header user={user} logout={logout}/>
             <Routes>
-              <Route path='/' element={<Main />} />
+              <Route path='/' element={<Main isLogin={user}/>} />
+              <Route path='/login' element={<Login loginIn={setUser}/>} />
             </Routes>
           </Layout.Content>
         </Layout>
