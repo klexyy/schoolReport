@@ -12,6 +12,7 @@ import {
   Row,
   Select,
   TimePicker,
+  Tooltip,
   Typography,
 } from 'antd';
 import moment from 'moment';
@@ -51,6 +52,7 @@ import {
   deleteProgram,
   getChannels,
   getData,
+  getGenre,
 } from '../api';
 
 type Props = {
@@ -148,6 +150,7 @@ const Main = ({ isLogin }: Props) => {
     {
       channel_id: number;
       program_id: number;
+      genre_id: number;
       channelName: string;
       name: string;
       date: string;
@@ -212,27 +215,35 @@ const Main = ({ isLogin }: Props) => {
   );
   const [temp, setTemp] = useState('');
   const [channels, setChannels] = useState<{ id: number; name: string }[]>([]);
+  const [genres, setGenres] = useState<{ id: number; name: string }[]>([]);
   const [modal, setModal] = useState(false);
   const [modalAdd, setModalAdd] = useState(false);
   const [addData, setAddData] = useState<{
     channel_id: number;
+    genre_id: number;
     time?: string;
     name: string;
     date?: string;
-  }>({ channel_id: 0, name: '', date: moment().format('DD.MM.YYYY') });
+  }>({
+    channel_id: 0,
+    genre_id: 1,
+    name: '',
+    date: moment().format('DD.MM.YYYY'),
+  });
   const [addToId, setAddToId] = useState(0);
   const [modalDel, setModalDel] = useState(false);
   const [selectedToChange, setSelectedToChange] = useState(0);
   const [selectedToDel, setSelectedToDel] = useState(0);
   const [modalData, setModalData] = useState<{
     name: string;
+    genre_id: number;
     time: string;
-  }>({ name: '', time: '' });
+  }>({ name: '',genre_id: 1, time: '' });
   const handleChange = (id: number) => {
     setModal(true);
     setSelectedToChange(id);
     setModalData(
-      data.find((el) => el.program_id === id) || { name: '', time: '' }
+      data.find((el) => el.program_id === id) || { name: '', genre_id: 1, time: '' }
     );
   };
   const openAddTo = (id: number) => {
@@ -244,6 +255,7 @@ const Main = ({ isLogin }: Props) => {
     setSelectedToDel(id);
   };
   useEffect(() => {
+    getGenre().then(({ data }) => setGenres(data));
     getChannels().then(({ data }) => setChannels(data));
     getData(selectedDate).then((result) => {
       setData(result.data);
@@ -251,7 +263,7 @@ const Main = ({ isLogin }: Props) => {
   }, [selectedDate]);
   return (
     <div className='root'>
-      {!channels.length && !data.length ? (
+      {!channels.length && !data.length && !genres.length ? (
         <></>
       ) : (
         <>
@@ -300,7 +312,9 @@ const Main = ({ isLogin }: Props) => {
                         >
                           <div className='row'>
                             <div>{el.time}</div>&nbsp;
-                            <div>{el.name}</div>
+                            <Tooltip title={genres.find( g => g.id === el.genre_id)?.name}>
+                              <div>{el.name}</div>
+                            </Tooltip>
                           </div>
                           <div className='icons'>
                             {isLogin ? (
@@ -344,8 +358,8 @@ const Main = ({ isLogin }: Props) => {
               );
             }}
           >
-            <Row gutter={25}>
-              <Col>Время</Col>
+            <Row gutter={5}>
+              <Col span={4}>Время</Col>
               <Col>
                 <Input
                   value={modalData.time}
@@ -356,7 +370,7 @@ const Main = ({ isLogin }: Props) => {
               </Col>
             </Row>
             <Row gutter={5} style={{ marginTop: '20px' }}>
-              <Col>Название</Col>
+              <Col span={4}>Название</Col>
               <Col>
                 <Input
                   value={modalData.name}
@@ -364,6 +378,19 @@ const Main = ({ isLogin }: Props) => {
                     setModalData({ ...modalData, name: target.value })
                   }
                 ></Input>
+              </Col>
+            </Row>
+            <Row gutter={5} style={{ marginTop: '20px' }}>
+              <Col span={4}>Жанр</Col>
+              <Col>
+              <Select
+                    value={modalData.genre_id}
+                    style={{ width: '200px' }}
+                    options={genres.map(el => ({label: el.name, value: el.id}))}
+                    onChange={(genre_id) =>
+                      setModalData({ ...modalData, genre_id })
+                    }
+                  ></Select>
               </Col>
             </Row>
           </Modal>
@@ -375,6 +402,7 @@ const Main = ({ isLogin }: Props) => {
               setModalAdd(false);
               setAddData({
                 channel_id: 0,
+                genre_id: 1,
                 name: '',
                 date: moment().format('HH:MM'),
               });
@@ -385,6 +413,7 @@ const Main = ({ isLogin }: Props) => {
                 setModalAdd(false);
                 setAddData({
                   channel_id: 0,
+                  genre_id: 1,
                   name: '',
                   date: moment().format('DD.MM.YYYY'),
                 });
@@ -427,6 +456,19 @@ const Main = ({ isLogin }: Props) => {
                       setAddData({ ...addData, name: target.value })
                     }
                   ></Input>
+                </Col>
+              </Row>
+              <Row>
+                <Col span={5}>Жанр</Col>
+                <Col>
+                  <Select
+                    value={addData.genre_id}
+                    style={{ width: '200px' }}
+                    options={genres.map(el => ({label: el.name, value: el.id}))}
+                    onChange={(genre_id) =>
+                      setAddData({ ...addData, genre_id })
+                    }
+                  ></Select>
                 </Col>
               </Row>
               <Row>

@@ -28,3 +28,6 @@ export const getData = (date: string) => {
 export const getChannels = () => {
     return axios.get(`${api}/channels`)
 }
+export const getGenre = () => {
+    return axios.get(`${api}/genre`)
+}
